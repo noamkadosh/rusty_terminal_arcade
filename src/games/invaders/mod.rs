@@ -21,7 +21,6 @@ pub const NUM_COLS: usize = 40;
 
 use rusty_audio::Audio;
 
-use std::env;
 use std::{
     error::Error,
     io,

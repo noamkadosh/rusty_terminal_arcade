@@ -20,20 +20,31 @@ fn main() -> std::io::Result<()> {
     // stdout.execute(EnterAlternateScreen)?;
     // let _ = stdout.execute(Hide);
 
-    let game_list = vec!["Invaders", "Snake"];
+    let game_list = vec!["Invaders", "Snake", "Quit"];
 
-    let selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Select a game")
-        .items(&game_list)
-        .default(0)
-        .interact_on_opt(&Term::stderr())?;
+    'main_menu: loop {
+        let selection = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Select a game")
+            .items(&game_list)
+            .default(0)
+            .interact_on_opt(&Term::stderr())?;
 
-    match selection {
-        Some(0) => {
-            start_invaders();
+        let game_result = match selection {
+            Some(0) => start_invaders(),
+            Some(1) => start_invaders(),
+            Some(_index) => return Ok(()),
+            None => return Ok(()),
+        };
+
+        match game_result {
+            Ok(_) => {
+                println!("Game finished");
+            }
+            Err(e) => {
+                println!("Error: {}", e);
+                break 'main_menu;
+            }
         }
-        Some(index) => println!("User selected item : {}", game_list[index]),
-        None => println!("User did not select anything"),
     }
 
     Ok(())
