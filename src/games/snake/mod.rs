@@ -1,3 +1,5 @@
+use crate::utils::frame::{new_frame, Drawable};
+use crate::utils::render::render;
 use crossterm::{
     cursor::{Hide, Show},
     event::{self, Event, KeyCode},
@@ -5,20 +7,7 @@ use crossterm::{
     ExecutableCommand,
 };
 
-pub mod invaders;
-pub mod player;
-pub mod shot;
-
-use crate::utils::frame::{new_frame, Drawable};
-use crate::utils::render::render;
-use invaders::Invaders;
-use player::Player;
-
-pub const NUM_ROWS: usize = 20;
-pub const NUM_COLS: usize = 40;
-
 use rusty_audio::Audio;
-
 use std::{
     error::Error,
     io,
@@ -27,16 +16,17 @@ use std::{
     time::{Duration, Instant},
 };
 
-pub fn play_invaders() -> Result<(), Box<dyn Error>> {
+pub mod direction;
+pub mod food;
+pub mod snake;
+
+pub const NUM_ROWS: usize = 20;
+pub const NUM_COLS: usize = 20;
+
+pub fn play_snake() -> Result<(), Box<dyn Error>> {
     // Audio
-    let mut audio = Audio::new();
-    audio.add("explode", "src/games/invaders/audio/explode.wav");
-    audio.add("lose", "src/games/invaders/audio/lose.wav");
-    audio.add("move", "src/games/invaders/audio/move.wav");
-    audio.add("pew", "src/games/invaders/audio/pew.wav");
-    audio.add("startup", "src/games/invaders/audio/startup.wav");
-    audio.add("win", "src/games/invaders/audio/win.wav");
-    audio.play("startup");
+    // ToDo add audio
+    let mut _audio = Audio::new();
 
     // Terminal
     let mut stdout = io::stdout();
@@ -61,9 +51,10 @@ pub fn play_invaders() -> Result<(), Box<dyn Error>> {
     });
 
     // Game Loop
-    let mut player = Player::new();
+    let mut snake = snake::Snake::new();
+    let mut food = food::Food::new();
     let mut instant = Instant::now();
-    let mut invaders = Invaders::new();
+
     'gameloop: loop {
         // Per-frame init
         let delta = instant.elapsed();
@@ -74,15 +65,12 @@ pub fn play_invaders() -> Result<(), Box<dyn Error>> {
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
-                    KeyCode::Left => player.move_left(),
-                    KeyCode::Right => player.move_right(),
-                    KeyCode::Char(' ') | KeyCode::Enter => {
-                        if player.shoot() {
-                            audio.play("pew");
-                        }
-                    }
+                    KeyCode::Left => snake.move_left(),
+                    KeyCode::Right => snake.move_right(),
+                    KeyCode::Up => snake.move_up(),
+                    KeyCode::Down => snake.move_down(),
                     KeyCode::Esc | KeyCode::Char('q') => {
-                        audio.play("lose");
+                        // audio.play("lose");
                         break 'gameloop;
                     }
                     _ => {}
@@ -91,16 +79,13 @@ pub fn play_invaders() -> Result<(), Box<dyn Error>> {
         }
 
         // Updates
-        player.update(delta);
-        if invaders.update(delta) {
-            audio.play("move");
-        }
-        if player.detect_hits(&mut invaders) {
-            audio.play("explode");
+        snake.update(delta);
+        if snake.detect_food(&food) {
+            food.eaten(&snake.body);
         }
 
         // Draw & Render
-        let drawables: Vec<&dyn Drawable> = vec![&player, &invaders];
+        let drawables: Vec<&dyn Drawable> = vec![&snake, &food];
         for drawable in drawables {
             drawable.draw(&mut curr_frame);
         }
@@ -108,12 +93,12 @@ pub fn play_invaders() -> Result<(), Box<dyn Error>> {
         sleep(Duration::from_millis(1));
 
         // Win or Lose?
-        if invaders.all_killed() {
-            audio.play("win");
+        if snake.hit_something() {
+            // audio.play("lose");
             break 'gameloop;
         }
-        if invaders.reached_bottom() {
-            audio.play("lose");
+        if snake.is_max_length() {
+            // audio.play("win");
             break 'gameloop;
         }
     }
@@ -121,7 +106,7 @@ pub fn play_invaders() -> Result<(), Box<dyn Error>> {
     // Cleanup
     drop(render_tx);
     render_handle.join().unwrap();
-    audio.wait();
+    // audio.wait();
     stdout.execute(Show)?;
     stdout.execute(LeaveAlternateScreen)?;
     terminal::disable_raw_mode()?;

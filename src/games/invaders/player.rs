@@ -1,9 +1,7 @@
 use std::time::Duration;
 
-use crate::games::invaders::frame::{Drawable, Frame};
-use crate::games::invaders::invaders::Invaders;
-use crate::games::invaders::shot::Shot;
-use crate::games::invaders::{NUM_COLS, NUM_ROWS};
+use crate::games::invaders::{invaders::Invaders, shot::Shot, NUM_COLS, NUM_ROWS};
+use crate::utils::frame::{Drawable, Frame};
 
 pub struct Player {
     x: usize,

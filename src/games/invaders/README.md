@@ -1,0 +1,1 @@
+This Invaders implementation is derived from [The Ultimate Rust Crash Course](https://www.udemy.com/course/ultimate-rust-crash-course/) by Nathan Stocks.

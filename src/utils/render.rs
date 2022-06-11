@@ -1,4 +1,4 @@
-use crate::games::invaders::frame::Frame;
+use crate::utils::frame::Frame;
 use std::io::{Stdout, Write};
 
 use crossterm::{

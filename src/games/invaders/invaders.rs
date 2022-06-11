@@ -2,7 +2,8 @@ use std::{cmp::max, time::Duration};
 
 use rusty_time::prelude::Timer;
 
-use crate::games::invaders::{frame::Drawable, NUM_COLS, NUM_ROWS};
+use crate::games::invaders::{NUM_COLS, NUM_ROWS};
+use crate::utils::frame::Drawable;
 
 pub struct Invader {
     pub x: usize,
@@ -92,7 +93,7 @@ impl Invaders {
 }
 
 impl Drawable for Invaders {
-    fn draw(&self, frame: &mut crate::games::invaders::frame::Frame) {
+    fn draw(&self, frame: &mut crate::utils::frame::Frame) {
         for invader in self.army.iter() {
             frame[invader.x][invader.y] = if self.mover_timer.time_left.as_secs_f32()
                 / self.mover_timer.duration.as_secs_f32()

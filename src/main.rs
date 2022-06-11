@@ -1,25 +1,11 @@
-// use crossterm::{
-//     cursor::{Hide, Show},
-//     event::{self, Event, KeyCode},
-//     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
-//     ExecutableCommand,
-// };
-
 mod games;
+mod utils;
 
 use console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
-use games::invaders::start_invaders;
-
-// use std::{error::Error, io, time::Duration};
+use games::{invaders::play_invaders, snake::play_snake};
 
 fn main() -> std::io::Result<()> {
-    // Terminal
-    // let mut stdout = io::stdout();
-    // terminal::enable_raw_mode()?;
-    // stdout.execute(EnterAlternateScreen)?;
-    // let _ = stdout.execute(Hide);
-
     let game_list = vec!["Invaders", "Snake", "Quit"];
 
     'main_menu: loop {
@@ -30,8 +16,8 @@ fn main() -> std::io::Result<()> {
             .interact_on_opt(&Term::stderr())?;
 
         let game_result = match selection {
-            Some(0) => start_invaders(),
-            Some(1) => start_invaders(),
+            Some(0) => play_invaders(),
+            Some(1) => play_snake(),
             Some(_index) => return Ok(()),
             None => return Ok(()),
         };
